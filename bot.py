@@ -1,4 +1,6 @@
-import os, asyncio, yt_dlp
+import os
+import asyncio
+import yt_dlp
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 
@@ -22,11 +24,11 @@ async def handle_url(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "quiet": True,
             "extractor_args": {"youtube": {"player_client": ["android"]}},
         }
-        loop = asyncio.get_event_loop()
         def download():
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=True)
-                return ydl.prepare_filename(info), info.get("title","Video")
+                return ydl.prepare_filename(info), info.get("title", "Video")
+        loop = asyncio.get_running_loop()
         filename, title = await loop.run_in_executor(None, download)
         await msg.edit_text("📤 Upload ho raha hai...")
         with open(filename, "rb") as f:
@@ -36,9 +38,12 @@ async def handle_url(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await msg.edit_text(f"❌ Error: {str(e)[:300]}")
 
-if __name__ == "__main__":
+async def main():
     app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_url))
     print("✅ Bot chalu ho gaya!")
-    app.run_polling(drop_pending_updates=True)
+    await app.run_polling(drop_pending_updates=True)
+
+if __name__ == "__main__":
+    asyncio.run(main())
