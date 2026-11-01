@@ -21,7 +21,15 @@ async def handle_url(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "format": "best[filesize<50M]/best",
             "outtmpl": os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s"),
             "quiet": True,
-            "extractor_args": {"youtube": {"player_client": ["android"]}},
+            "extractor_args": {
+                "youtube": {
+                    "player_client": ["ios", "web"],
+                    "player_skip": ["webpage"],
+                }
+            },
+            "http_headers": {
+                "User-Agent": "com.google.ios.youtube/19.29.1 (iPhone16,2; U; CPU iOS 17_5_1 like Mac OS X;)",
+            },
         }
         import asyncio
         loop = asyncio.get_running_loop()
